@@ -54,6 +54,8 @@ void GirisYapilanHesabiGuncelle();
 void HesapAc();
 void HesaplarimMenu();
 void HesabaParaYatir();
+void HesaptanParaCek();
+void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID);
 //
 	
 
@@ -105,7 +107,7 @@ void HesabaParaYatir();
 		struct ticariMusteri tcr_musteriler[100];
 		float hazine;
 		int girisYapilanID; // -1 Giris Yapilmadi
-		int girisYapilanHesapTipi; // 0 Bï¿½REYSEL 1 Tï¿½CARï¿½ 
+		int girisYapilanHesapTipi; // 0 BIREYSEL 1 TICARI
 		int bireyselMS,ticariMS; //  ms = musteri sayisi		
 	}bnk; 
 	
@@ -131,7 +133,7 @@ void AnaMenu()
 	
 	char secim[20];
 	system("cls");
-	printf("\n\n\n------------ Ana Menu ------------\n");
+	printf("\n\n\n<------------ Ana Menu ------------>\n");
 	printf("<!> 1. Yeni Müþteri Kaydý\n");
 	printf("<!> 2. Müþteri Giriþi\n");
 	printf("<!> 3. Banka Gelir - Gider Raporu\n");
@@ -164,9 +166,9 @@ void YeniMusteri()
 	int musteriTip=0; // Bireysel mi ticari mi ? // 0 Bï¿½REYSEL // 1 Tï¿½CARï¿½
 
 	system("cls");
-	printf("\n\n\n------------ Yeni Müþteri Kaydý ------------\n");
-	printf("\n<!> Müþteri tipinizi seçiniz:\n\t1. Bireysel\n\t2. Ticari");
-	printf("\nSeÃ§iminiz: ");
+	printf("\n\n\n<------------ Yeni Müþteri Kaydý ------------>\n");
+	printf("\n<!> Müþteri tipinizi seçiniz:\n\t1. Bireysel\n\t2. Ticari\n\t0. Ana Menuye Dön");
+	printf("\nSeçiminiz: ");
 	scanf("%s",&secim);	
 	
 	//Hesap Tipini Seï¿½iniz
@@ -174,6 +176,8 @@ void YeniMusteri()
 			musteriTip=0;
 	else if(strcmp(secim,"2") == 0)
 		 	musteriTip=1;
+	else if(strcmp(secim,"0") == 0)
+		 	AnaMenu();
 	else{
 		printf("Hatalý bir seçim yaptýnýz!");
 		Sleep(1500);
@@ -182,12 +186,12 @@ void YeniMusteri()
 		}
 		
 			
-	if(musteriTip == 0) // Bï¿½REYSEL MUSTERï¿½ KAYDI YAP
+	if(musteriTip == 0) // BIREYSEL MUSTERI KAYDI YAP
 	{
 		
 		printf("<!>Ad Soyad:");
 		fflush(stdin);
-		gets(bnk.bry_musteriler[bnk.bireyselMS].adSoyad); // TODO: NUMARA Gï¿½RMEYï¿½ ENGELLE
+		gets(bnk.bry_musteriler[bnk.bireyselMS].adSoyad); // TODO: NUMARA GIRMEYI ENGELLE
 		printf("\n<!>TC:");
 		gets(bnk.bry_musteriler[bnk.bireyselMS].TC);
 	
@@ -306,10 +310,13 @@ void MusteriGirisi()
 	char TC[15],sifre[20];
 	char tip[10];
 	system("cls");
-	printf("\n\n\n------------ Müþteri Giriþi ------------\n");
-	printf("<!> TC Kimlik Numarasï¿½:");
+	printf("\n\n\n<------------ Müþteri Giriþi ------------>\n");
+	printf("<!> TC Kimlik Numarasý (0 = Ýptal Et): ");
 	fflush(stdin);
 	gets(TC);
+	if(strcmp(TC,"0") == 0)
+		AnaMenu();
+		
 	printf("\n<!> Þifre:");
 	gets(sifre);
 	printf("\n<!> Musteri tipiniz (1 = Bireysel, 2 = Ticari): ");
@@ -389,14 +396,15 @@ void MusteriMenu()
 {
 	char secim[20];
 	system("cls");
-	printf("\n\n\n------------ Musteri Menu ------------\n");
+	printf("\n\n\n<------------ Musteri Menu ------------>\n");
 	printf("<> Ad Soyad: %s\n<> Müþteri No: %d\n<> TC: %s\n<> Müþteri Tipi: %s\n<> Hesap Sayýsý: %d\n\n",bnk.aktif_musteri.adSoyad,bnk.aktif_musteri.No,bnk.aktif_musteri.TC,bnk.aktif_musteri.tip,bnk.aktif_musteri.hesapsayisi);
 			
 	printf("<!> 1. Hesap Açma\n");
 	printf("<!> 2. Hesaplarým\n");
-	printf("<!> 3. Hesabýma Para Yatýr\n");
+	printf("<!> 3. Para Yatýrma\n");
+	printf("<!> 4. Para Çekme\n");
 	printf("<!> 4. Banka Gelir - Gider Raporu\n");
-	printf("<!> 5. Çýkýþ Yap\n");
+	printf("<!> 0. Çýkýþ Yap\n");
 	printf("<!> Seçim Yapýnýz: ");
 	scanf("%s",&secim);
 	
@@ -407,8 +415,10 @@ void MusteriMenu()
 		HesaplarimMenu();
 	else if(strcmp(secim,"3") == 0)
 		HesabaParaYatir();
+	else if(strcmp(secim,"4") == 0)
+		HesaptanParaCek();
 		
-	else if(strcmp(secim,"5") == 0)
+	else if(strcmp(secim,"0") == 0)
 	{
 		bnk.girisYapilanHesapTipi = -1; // Cikis yap
 		AnaMenu();
@@ -432,7 +442,7 @@ void HesapAc()
 	char secim;
 	
 	system("cls");
-	printf("\n\n\n------------ Hesap Acma ------------\n");
+	printf("\n\n\n<------------ Hesap Acma ------------>\n");
 	printf("<> Ad Soyad: %s\n<> Musteri No: %d\n<> TC: %s\n<> Musteri Tipi: %s\n<> Hesap Sayisi: %d\n\n",bnk.aktif_musteri.adSoyad,bnk.aktif_musteri.No,bnk.aktif_musteri.TC,bnk.aktif_musteri.tip,bnk.aktif_musteri.hesapsayisi);
 	bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].No = RastgeleSayiOlustur(1);
 	bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].id = bnk.aktif_musteri.hesapsayisi;
@@ -489,7 +499,7 @@ void HesabaParaYatir()
 	char *secim;
 	int secilenID;
 	float yatirilacakMiktar;
-	printf("\n\n\n<------------ Hesaplarým ------------>\n");
+	printf("\n\n\n<------------ Para Yatýrma ------------>\n");
 	for(i=0;i<bnk.aktif_musteri.hesapsayisi;i++)
 	{
 		printf("\t----------------\n");
@@ -500,8 +510,11 @@ void HesabaParaYatir()
 		
 	}
 	
-	printf("\n\n\t<!> Para yatýrmak istediðiniz hesap ID sini giriniz:");
+	printf("\n\n\t<!> Para yatýrmak istediðiniz hesap ID sini giriniz (-1 = Önceki Menüye Dön): ");
 	scanf("%s",secim);
+	
+	if(strcmp(secim,"-1") == 0)
+		MusteriMenu();
 	
 	if(isdigit(*secim) == 0)
 	{
@@ -520,6 +533,7 @@ void HesabaParaYatir()
 		HesabaParaYatir();
 		return;
 	}
+	
 	
 	printf("\t<!> Hesap Numaraniz: %d, devam etmek için bir tuþa basýnýz... (0 = Iþlemi Ýptal Et ve Menüye Dön)",bnk.aktif_musteri.hesap[secilenID].No);
 	
@@ -555,13 +569,14 @@ void HesabaParaYatir()
 			return;
 		}
 
-	// Parayï¿½ Hesaba Ekle
+	// ParayýHesaba Ekle
 	bnk.aktif_musteri.hesap[secilenID].bakiye+=yatirilacakMiktar;
 	bnk.hazine += yatirilacakMiktar;
 	MusteriVerileriniGuncelle();
+	BankaVerileriniGuncelle();
 	//Parayï¿½ Hesaba Ekleme Son
 	
-	printf("\t<!> %.2f TL hesabýnýza yatýrýldý. Yeni bakiyeniz: %.2f. \n\t<!>Ana menüye dönmek için bir tuþa basýnýz...\n\n\n\n",yatirilacakMiktar,bnk.aktif_musteri.hesap[secilenID].bakiye);
+	printf("\n\t<!> %.2f TL hesabýnýza yatýrýldý. Yeni bakiyeniz: %.2f. \n\t<!>Ana menüye dönmek için bir tuþa basýnýz...\n\n\n\n",yatirilacakMiktar,bnk.aktif_musteri.hesap[secilenID].bakiye);
 	*secim = getch();
 	MusteriMenu();
 	return;
@@ -570,11 +585,174 @@ void HesabaParaYatir()
 }
 
 
+void HesaptanParaCek()
+{
+
+	int i,j;
+	system("cls");
+	char para[20];
+	char *secim;
+	int secilenID;
+	float cekilecekMiktar;
+	float eksikMiktar;
+	
+	
+	printf("\n\n\n<------------ Para Çekme ------------>\n");
+	for(i=0;i<bnk.aktif_musteri.hesapsayisi;i++)
+	{
+		printf("\t----------------\n");
+		printf("\t<!> Hesap ID: %d\n",bnk.aktif_musteri.hesap[i].id);
+		printf("\t<!> Hesap No: %d\n",bnk.aktif_musteri.hesap[i].No);
+		printf("\t<!> Hesap Bakiyesi: %.2f\n",bnk.aktif_musteri.hesap[i].bakiye);
+		printf("\t----------------\n\n");
+		
+	}
+	
+	printf("\n\n\t<!> Para çekmek istediðiniz hesap ID sini giriniz (-1 = Önceki Menüye Dön): ");
+	scanf("%s",secim);
+	
+	if(strcmp(secim,"-1") == 0)
+		MusteriMenu();
+	
+	if(isdigit(*secim) == 0)
+	{
+		printf("\t<!> Hatalý bir seçim yaptýnýz.");
+		Sleep(1500);
+		HesaptanParaCek();
+		return;
+	}
+	
+	secilenID = atoi(secim);
+	
+	if(secilenID>=bnk.aktif_musteri.hesapsayisi || secilenID<0)
+	{
+		printf("\t<!> Geçersiz bir ID numarasý girdiniz.");
+		Sleep(1500);
+		HesaptanParaCek();
+		return;
+	}
+	
+	
+	printf("\n\t<!> Hesap Numaraniz: %d, devam etmek için bir tuþa basýnýz... (0 = Iþlemi Ýptal Et ve Menüye Dön)",bnk.aktif_musteri.hesap[secilenID].No);
+	
+	*secim = getch();
+	
+	if(secim == "0")
+		{
+			MusteriMenu();
+			return;
+		}
+		
+
+	printf("\n\t<!> Çekmek istediðiniz miktarý yazýnýz: ");
+	scanf("%s",&para);
+	
+	
+	if(isdigit(*para) == 0)
+	{
+		printf("\t<!> Hatalý bir para girdiniz.");
+		Sleep(1500);
+		HesaptanParaCek();
+		return;
+	}
+	
+	
+	cekilecekMiktar = atof(para);
+	
+	if(cekilecekMiktar>bnk.aktif_musteri.hesap[secilenID].bakiye){
+		eksikMiktar = cekilecekMiktar - bnk.aktif_musteri.hesap[secilenID].bakiye;
+		printf("\n\t<!> Hesabýnýzda o kadar para yok. Eksik olan %0.2f TL'yi ek hesabýnýzdan çekmek için bir tuþa basýn.. (0 = Ýþlemi Ýptal Et)",eksikMiktar);
+		*secim = getch();
+		if(secim == "0"){
+			printf("<!> Para çekme iþlemi baþarýsýz oldu!");
+			Sleep(1500);
+			MusteriMenu();
+			return;
+		}
+		
+		ParayiEkHesaptanCek(eksikMiktar,cekilecekMiktar,secilenID);
+		return;
+	}
+	
+	
+	
+	printf("\n\t<!> Hesabýnýzdan çekilecek miktar %.2f TL, onaylýyorsanýz bir tuþa basýnýz... (0 = Ýslemi Ýptal Et ve Menüye Dön)",cekilecekMiktar);
+	
+	*secim = getch();
+	if(secim == "0")
+		{
+			MusteriMenu();
+			return;
+		}
+
+	// Parayý Hesaptan Kes
+	bnk.aktif_musteri.hesap[secilenID].bakiye-=cekilecekMiktar;
+	bnk.hazine -= cekilecekMiktar;
+	MusteriVerileriniGuncelle();
+	BankaVerileriniGuncelle();
+	//Parayý Hesaptan Kesme Son
+	
+	printf("\n\t<!> %.2f TL hesabýnýzdan çekildi. Yeni bakiyeniz: %.2f. \n\t<!>Ana menüye dönmek için bir tuþa basýnýz...\n\n\n\n",cekilecekMiktar,bnk.aktif_musteri.hesap[secilenID].bakiye);
+	*secim = getch();
+	MusteriMenu();
+	return;
+	
+	
+}
 
 
 
 
 
+
+void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
+{
+	int i;
+	int hesapID = -1;// eðer -1 kalýrsa ek hesabýnda da para yok
+	char *secim; 
+	//Hesaplarý gez eksikmiktardan büyük olan hesap varsa ondan çek
+	for(i=0;i<bnk.aktif_musteri.hesapsayisi;i++)
+		{
+			if(bnk.aktif_musteri.hesap[i].bakiye >= eksikMiktar)
+			{
+				hesapID = i;
+				break;
+			}
+			
+		}
+		
+		
+	if(hesapID == -1){
+			printf("\n\t<!> Hiç bir hesabýnýzda %.2f TL bulunamadi. Ana menuye yönlendiriliyorsunuz..",eksikMiktar);
+			Sleep(3000);
+			MusteriMenu();
+			return;
+		}
+		
+		printf("\n\t<!> Eksik olan %.2f TL, %d No'lu hesabýnýzdan çekilecek.",eksikMiktar,bnk.aktif_musteri.hesap[hesapID].No);
+		printf("\n\t<!> Bu hesabýnýzdaki mevcut bakiye %.2f TL, devam etmek istiyorsanýz bir tuþa basýnýz..(0 = Ýþlemi Ýptal Et)",bnk.aktif_musteri.hesap[hesapID].bakiye);
+		
+		*secim = getch();
+		if(secim == "0")
+			{
+				MusteriMenu();
+				return;
+			}
+			
+			//Ek hesaptan ve orjinal hesaptan parayý çek
+			bnk.aktif_musteri.hesap[hesapID].bakiye-=eksikMiktar;
+			bnk.aktif_musteri.hesap[anaHesapID].bakiye = 0;
+			bnk.hazine-= cekilecekMiktar;
+			
+			MusteriVerileriniGuncelle();
+			BankaVerileriniGuncelle();
+			
+			printf("\n\t<!> %.2f TL hesaplarýnýzdan baþarýyla çekildi, ana menuye dönmek için bir tuþa basýnýz..",cekilecekMiktar);
+			*secim = getch();
+			MusteriMenu();
+			return;
+	
+}
 
 
 
@@ -624,6 +802,8 @@ void GirisYapilanHesabiProgramaCek()
 		}
 		
 	}
+	
+	return;
 }
 
 
@@ -679,8 +859,8 @@ void GirisYapilanHesabiGuncelle()
 	}
 	
 	
-	
-	
+	GirisYapilanHesabiProgramaCek();
+	return;
 }
 
 
@@ -690,8 +870,11 @@ void BankaVerileriniGuncelle()
 	FILE *fp;
 	fp = fopen("banka.txt","w");
 	fprintf(fp,"Bireysel Musteri Sayisi: %d\nTicari Musteri Sayisi: %d",bnk.bireyselMS,bnk.ticariMS);
+	fprintf(fp,"\nBanka Hazinesi: %.2f TL",bnk.hazine);
 	fclose(fp);	
 	BankaVerileriniCek();
+	
+	return;
 }
 
 
@@ -709,7 +892,10 @@ void BankaVerileriniCek()
 			BankaVerileriniGuncelle();
 		}
 	fscanf(fp,"Bireysel Musteri Sayisi: %d\nTicari Musteri Sayisi: %d",&bnk.bireyselMS,&bnk.ticariMS);
+	fscanf(fp,"\nBanka Hazinesi: %f TL",&bnk.hazine);
 	fclose(fp);
+	
+	return;
 
 }
 
@@ -762,7 +948,7 @@ void MusteriVerileriniCek()
 	fclose(bireyselF);
 	
 	
-	
+	return;
 }
 
 
@@ -802,6 +988,7 @@ void MusteriVerileriniGuncelle()
 	fclose(bireyselF);
 	fclose(ticariF);
 	MusteriVerileriniCek();	
+	return;
 }
 
 
