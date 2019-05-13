@@ -165,7 +165,7 @@ void YeniMusteri()
 
 	system("cls");
 	printf("\n\n\n------------ Yeni Müþteri Kaydý ------------\n");
-	printf("\n<!> Müþteri tipinizi seï¿½iniz:\n\t1. Bireysel\n\t2. Ticari");
+	printf("\n<!> Müþteri tipinizi seçiniz:\n\t1. Bireysel\n\t2. Ticari");
 	printf("\nSeÃ§iminiz: ");
 	scanf("%s",&secim);	
 	
