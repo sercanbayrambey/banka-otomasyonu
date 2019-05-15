@@ -5,21 +5,21 @@
 #include <locale.h>
 
 /* 
--Yeni Müþteri Ekleme
+-************Yeni Müþteri Ekleme
     -Müþteri No (Special)
     -Bireysel / Ticari (Farklý Dosyalar)
 
--Hesap Açtýrma
+****************-Hesap Açtýrma
     -Müþteri istediði kadar hesap açar
     -Hesap numaralarý eþsiz
 
 -Para Çekme
     -Bireysel max günlük para çekme: 750, ticari: 1500
-    -Hesabýnda yoksa ek hesap
+    ************-Hesabýnda yoksa ek hesap
 
--Para Yatýrma
-
--Hesaba Havale
+**************-Para Yatýrma
+TODO: KENDÝNE HAVALE YAPAMASIN
+************************************-Hesaba Havale
     -Havale yapacagý kiþinin hesap no
     -Ticari müþtelerilerden havale ücreti kesilmez, bireysel müþteriler %2 kesilir.
 
@@ -56,6 +56,9 @@ void HesaplarimMenu();
 void HesabaParaYatir();
 void HesaptanParaCek();
 void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID);
+void HavaleYap();
+int MusteriIDBul(int hesapNo);
+int HesapIDBul(int hesapNo);
 //
 	
 
@@ -108,6 +111,7 @@ void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 		float hazine;
 		int girisYapilanID; // -1 Giris Yapilmadi
 		int girisYapilanHesapTipi; // 0 BIREYSEL 1 TICARI
+		int havaleYapilacakHesapTipi; // 0 BIREYSEL 1 TICARI
 		int bireyselMS,ticariMS; //  ms = musteri sayisi		
 	}bnk; 
 	
@@ -119,6 +123,7 @@ int main()
 {
 	bnk.girisYapilanHesapTipi = -1;
 	bnk.girisYapilanID = -1;
+	bnk.havaleYapilacakHesapTipi = -1;
 	setlocale(LC_ALL, "Turkish"); 
 	BankaVerileriniCek();
 	MusteriVerileriniCek();
@@ -171,7 +176,7 @@ void YeniMusteri()
 	printf("\nSeçiminiz: ");
 	scanf("%s",&secim);	
 	
-	//Hesap Tipini Seï¿½iniz
+	//Hesap Tipini Seçiniz
 	if(strcmp(secim,"1") == 0)
 			musteriTip=0;
 	else if(strcmp(secim,"2") == 0)
@@ -293,7 +298,7 @@ int KayitSorgula(int tip)
 		
 		for(i=0;i<bnk.ticariMS;i++)
 	{
-		if(strcmp(bnk.tcr_musteriler[i].TC,bnk.tcr_musteriler[bnk.bireyselMS].TC) == 0)	
+		if(strcmp(bnk.tcr_musteriler[i].TC,bnk.tcr_musteriler[bnk.ticariMS].TC) == 0)	
 			return -1;
 	}
 	
@@ -326,7 +331,7 @@ void MusteriGirisi()
 		{
 		printf("<!> Hatalý bir seçim yaptýnýz!");
 		Sleep(1500);
-		AnaMenu();
+		MusteriGirisi();
 		return;
 		}
 			
@@ -347,7 +352,7 @@ void MusteriGirisi()
 	}
 	
 	
-	
+	return;
 }
 
 int MusteriGirisSorgula(char TC[20],char sifre[25],char tip[12])
@@ -403,6 +408,7 @@ void MusteriMenu()
 	printf("<!> 2. Hesaplarým\n");
 	printf("<!> 3. Para Yatýrma\n");
 	printf("<!> 4. Para Çekme\n");
+	printf("<!> 5. Havale Yap\n");
 	printf("<!> 4. Banka Gelir - Gider Raporu\n");
 	printf("<!> 0. Çýkýþ Yap\n");
 	printf("<!> Seçim Yapýnýz: ");
@@ -417,6 +423,8 @@ void MusteriMenu()
 		HesabaParaYatir();
 	else if(strcmp(secim,"4") == 0)
 		HesaptanParaCek();
+	else if(strcmp(secim,"5") == 0)
+		HavaleYap();
 		
 	else if(strcmp(secim,"0") == 0)
 	{
@@ -446,14 +454,15 @@ void HesapAc()
 	printf("<> Ad Soyad: %s\n<> Musteri No: %d\n<> TC: %s\n<> Musteri Tipi: %s\n<> Hesap Sayisi: %d\n\n",bnk.aktif_musteri.adSoyad,bnk.aktif_musteri.No,bnk.aktif_musteri.TC,bnk.aktif_musteri.tip,bnk.aktif_musteri.hesapsayisi);
 	bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].No = RastgeleSayiOlustur(1);
 	bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].id = bnk.aktif_musteri.hesapsayisi;
+	bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].bakiye = 0;
 	printf("<!> 1. Hesap Numaraniz: %d\n",bnk.aktif_musteri.hesap[bnk.aktif_musteri.hesapsayisi].No);
 	printf("<!> Devam etmek ve hesabýnýzý açmak için bir tuþa basýn (0 = Islemi iptal et ve menüye dön) ...");
 	secim = getch();
 	if(secim == '0')
 		MusteriMenu();
-		
-	bnk.aktif_musteri.hesapsayisi++; // Hesap Basariyla Acildi
 	
+	 // Hesap Basariyla Acildi
+	bnk.aktif_musteri.hesapsayisi++;
 	MusteriVerileriniGuncelle();
 	printf("\n<!> Hesabýnýz baþarýyla açýldý!");
 	Sleep(1500);
@@ -627,7 +636,7 @@ void HesaptanParaCek()
 	if(secilenID>=bnk.aktif_musteri.hesapsayisi || secilenID<0)
 	{
 		printf("\t<!> Geçersiz bir ID numarasý girdiniz.");
-		Sleep(1500);
+		Sleep(2000);
 		HesaptanParaCek();
 		return;
 	}
@@ -702,14 +711,12 @@ void HesaptanParaCek()
 
 
 
-
-
-
 void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 {
 	int i;
 	int hesapID = -1;// eðer -1 kalýrsa ek hesabýnda da para yok
-	char *secim; 
+	char *secim;
+	int gonderilecekMiktar;
 	//Hesaplarý gez eksikmiktardan büyük olan hesap varsa ondan çek
 	for(i=0;i<bnk.aktif_musteri.hesapsayisi;i++)
 		{
@@ -755,8 +762,243 @@ void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 }
 
 
+void HavaleYap()
+{
+	int i,j;
+	system("cls");
+	char para[20];
+	char tempHesapNo[20];
+	char *secim;
+	int secilenID;
+	float gonderilecekMiktar,komisyon;
+	int havaleHesapNo;
+	int havaleHesapID;
+	int havaleMusteriID;
+
+	printf("\n\n\n<------------ Havale ------------>\n");
+	for(i=0;i<bnk.aktif_musteri.hesapsayisi;i++)
+	{
+		printf("\t----------------\n");
+		printf("\t<!> Hesap ID: %d\n",bnk.aktif_musteri.hesap[i].id);
+		printf("\t<!> Hesap No: %d\n",bnk.aktif_musteri.hesap[i].No);
+		printf("\t<!> Hesap Bakiyesi: %.2f\n",bnk.aktif_musteri.hesap[i].bakiye);
+		printf("\t----------------\n\n");
+		
+	}
+	
+	printf("\n\n\t<!> Paranýzýn çekileceði hesap ID'sýný giriniz (-1 Menüye Dön): ");
+	scanf("%s",secim);
+	
+	if(strcmp(secim,"-1") == 0)
+		MusteriMenu();
+	
+	if(isdigit(*secim) == 0)
+	{
+		printf("\t<!> Hatalý bir seçim yaptýnýz.");
+		Sleep(1500);
+		HavaleYap();
+		return;
+	}
+	
+	secilenID = atoi(secim);
+	
+	if(secilenID>=bnk.aktif_musteri.hesapsayisi || secilenID<0)
+	{
+		printf("\t<!> Geçersiz bir ID numarasý girdiniz.");
+		Sleep(2000);
+		HavaleYap();
+		return;
+	}
+	
+	
+	printf("\n\t<!> Hesap Numaraniz: %d, devam etmek için bir tuþa basýnýz... (0 = Iþlemi Ýptal Et ve Menüye Dön)",bnk.aktif_musteri.hesap[secilenID].No);
+	
+	*secim = getch();
+	
+	if(secim == "0")
+		{
+			MusteriMenu();
+			return;
+		}
+		
+
+	printf("\n\t<!> Göndermek istediðiniz miktarý yazýnýz (Bireysel Müþterilerden %%2 islem ücreti kesilir.): ");
+	scanf("%s",&para);
+
+	
+	if(isdigit(*para) == 0)
+	{
+		printf("\t<!> Hatalý bir para girdiniz.");
+		Sleep(2000);
+		HavaleYap();
+		return;
+	}
+	
+	if(bnk.girisYapilanHesapTipi == 0) // Bireysel ise %2 iþlem ücreti kes
+		komisyon = atof(para)*2/100;
+	else
+		komisyon = 0;
+
+	gonderilecekMiktar = atof(para) + komisyon;
+	
+	if(gonderilecekMiktar>bnk.aktif_musteri.hesap[secilenID].bakiye){
+		printf("\n\t<!> Hesabýnýzda o kadar para yok. Eksik olan: %0.2f TL Komisyon: %.2f TL. Menüye yönlendiriliyorsunuz..",bnk.aktif_musteri.hesap[secilenID].bakiye-gonderilecekMiktar,komisyon);
+		Sleep(4000);
+		MusteriMenu();
+		return;
+	}
+	
+	printf("\n\t<!> %.2f TL göndereceksiniz, iþlem ücreti %.2f TL",gonderilecekMiktar-komisyon,komisyon);
+	printf("\n\t<!> Parayý göndereceðiniz Hesap No: ");
+	scanf("%s",&tempHesapNo);
+	if(isdigit(*tempHesapNo) == 0)
+	{
+		printf("\n\t<!> Hatalý bir Hesap No girdiniz.");
+		Sleep(3000);
+		HavaleYap();
+		return;
+	}
+	havaleHesapNo = atoi(tempHesapNo);
+	havaleMusteriID = MusteriIDBul(havaleHesapNo);
+	havaleHesapID = HesapIDBul(havaleHesapNo);
+	if(havaleMusteriID == -1)
+	{
+		printf("\n\t<!> Böyle bir müþteri bulunamadý veya kendi hesabýnýza havale yapmaya çalýþýyorsunuz! ");
+		Sleep(3000);
+		HavaleYap();
+		return;
+	}
+	
+	
+	if(bnk.havaleYapilacakHesapTipi == 0) // Bireysel Ýþlemler
+	{
+	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar,havaleHesapNo,bnk.bry_musteriler[havaleMusteriID].adSoyad);
+	printf("\n\t<!> Onaylýyorsanýz bir tuþa basýn... (0= Ýptal)");
+	*secim = getch();
+	if(secim == "0")
+		{
+			HavaleYap();
+			return;
+		}
+		
+	//Gonderme basarili		
+	bnk.aktif_musteri.hesap[secilenID].bakiye-=gonderilecekMiktar;
+	if(bnk.havaleYapilacakHesapTipi == 0)
+		bnk.bry_musteriler[havaleMusteriID].hesap[havaleHesapID].bakiye+= (gonderilecekMiktar - komisyon);	
+	else
+		bnk.tcr_musteriler[havaleMusteriID].hesap[havaleHesapID].bakiye+= (gonderilecekMiktar - komisyon);
+		
+		
+	MusteriVerileriniGuncelle();
+	BankaVerileriniGuncelle();
+	//Gönderme tamamlandý
+	printf("\n\t<!> %.2f TL %d nolu hesaba baþarýyla gönderildi.",gonderilecekMiktar-komisyon,havaleHesapNo);
+	printf("\n\t<!> Menüye dönmek için bir tuþa basýnýz...");
+	*secim = getch();
+	MusteriMenu();
+	return;
+	}
+	else // TÝCARÝ HESABA GÖNDER
+		{
+	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar,havaleHesapNo,bnk.tcr_musteriler[havaleMusteriID].adSoyad);
+	printf("\n\t<!> Onaylýyorsanýz bir tuþa basýn... (0= Ýptal)");
+	*secim = getch();
+	if(secim == "0")
+		{
+			HavaleYap();
+			return;
+		}
+		
+	//Gonderme basarili		
+	bnk.aktif_musteri.hesap[secilenID].bakiye-=gonderilecekMiktar;
+	bnk.tcr_musteriler[havaleMusteriID].hesap[havaleHesapID].bakiye+= (gonderilecekMiktar - komisyon);	
+	MusteriVerileriniGuncelle();
+	BankaVerileriniGuncelle();
+	printf("\n\t<!> %.2f TL %d nolu hesaba baþarýyla gönderildi.",gonderilecekMiktar-komisyon,havaleHesapNo);
+	printf("\n\t<!> Menüye dönmek için bir tuþa basýnýz...");
+	*secim = getch();
+	MusteriMenu();
+	return;
+	}
+		
+	return;	
+}
 
 
+int MusteriIDBul(int hesapNo)
+{
+	bnk.havaleYapilacakHesapTipi = -1;
+	int i,j;
+	int id = -1;
+	
+	for(i=0;i<bnk.bireyselMS;i++)
+	{
+		for(j=0;j<bnk.bry_musteriler[i].hesapsayisi;j++)
+		{
+			if(hesapNo == bnk.bry_musteriler[i].hesap[j].No  )
+				{
+				id = bnk.bry_musteriler[i].id;
+				bnk.havaleYapilacakHesapTipi = 0;			
+				return id;		
+				}
+				
+		}
+	}
+	
+	for(i=0;i<bnk.ticariMS;i++)
+	{
+		for(j=0;j<bnk.tcr_musteriler[i].hesapsayisi;j++)
+		{
+			if(hesapNo == bnk.tcr_musteriler[i].hesap[j].No )
+				{
+				id = bnk.tcr_musteriler[i].id;
+				bnk.havaleYapilacakHesapTipi = 1;
+				return id;					
+				}
+				
+		}
+	}
+	
+	
+	return id; // -1 dönerse böyle bir hesap yok !
+	
+}
+
+
+int HesapIDBul(int hesapNo)
+{
+	int i,j;
+	int id = -1;
+	for(i=0;i<bnk.bireyselMS;i++)
+	{
+		for(j=0;j<bnk.bry_musteriler[i].hesapsayisi;j++)
+		{
+			if(hesapNo == bnk.bry_musteriler[i].hesap[j].No)
+				{
+				id = bnk.bry_musteriler[i].hesap[j].id;
+				return id;					
+				}
+				
+		}
+	}
+	
+	for(i=0;i<bnk.ticariMS;i++)
+	{
+		for(j=0;j<bnk.tcr_musteriler[i].hesapsayisi;j++)
+		{
+			if(hesapNo == bnk.tcr_musteriler[i].hesap[j].No)
+				{
+				id = bnk.tcr_musteriler[i].hesap[j].id;
+				return id;					
+				}
+				
+		}
+	}
+	
+	
+	return id; // -1 dönerse böyle bir hesap yok !
+	
+}
 
 
 void GirisYapilanHesabiProgramaCek()
@@ -809,7 +1051,6 @@ void GirisYapilanHesabiProgramaCek()
 
 void GirisYapilanHesabiGuncelle()
 {
-	
 	int i,j;
 	
 	
@@ -831,10 +1072,7 @@ void GirisYapilanHesabiGuncelle()
 			bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].bakiye = bnk.aktif_musteri.hesap[i].bakiye;
 			bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].No = bnk.aktif_musteri.hesap[i].No ;
 		}
-			
-			
-			
-			
+				
 			
 		}
 		else  //Tï¿½CARï¿½
@@ -935,12 +1173,12 @@ void MusteriVerileriniCek()
 	
 	for(i=0;i<bnk.ticariMS;i++){
 
-	fscanf(ticariF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",&bnk.tcr_musteriler[i].adSoyad,&bnk.bry_musteriler[i].id,&bnk.bry_musteriler[i].No,&bnk.tcr_musteriler[i].TC,&bnk.tcr_musteriler[i].sifre,&bnk.tcr_musteriler[i].tip,&bnk.tcr_musteriler[i].hesapsayisi);
+		fscanf(ticariF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",&bnk.tcr_musteriler[i].adSoyad,&bnk.tcr_musteriler[i].id,&bnk.tcr_musteriler[i].No,&bnk.tcr_musteriler[i].TC,&bnk.tcr_musteriler[i].sifre,&bnk.tcr_musteriler[i].tip,&bnk.tcr_musteriler[i].hesapsayisi);
 		for(j=0;j<bnk.tcr_musteriler[i].hesapsayisi;j++)
 		{
-			fprintf(ticariF,"\n\t\t\tHesap ID: %d",&bnk.tcr_musteriler[i].hesap[j].id);
-			fprintf(ticariF,"\n\t\t\tHesap No: %d",&bnk.tcr_musteriler[i].hesap[j].No);
-			fprintf(ticariF,"\n\t\t\tHesap Bakiyesi: %f\n",&bnk.tcr_musteriler[i].hesap[j].bakiye);
+			fscanf(ticariF,"\n\t\t\tHesap ID: %d",&bnk.tcr_musteriler[i].hesap[j].id);
+			fscanf(ticariF,"\n\t\t\tHesap No: %d",&bnk.tcr_musteriler[i].hesap[j].No);
+			fscanf(ticariF,"\n\t\t\tHesap Bakiyesi: %f\n",&bnk.tcr_musteriler[i].hesap[j].bakiye);
 		}
 	}
 	
@@ -1041,7 +1279,7 @@ int RastgeleSayiOlustur(int tip) // Hesap Numarasi Mi yoksa Musteri Numarasi Mi 
 		}
 		
 		
-		return a; // bu dï¿½ngï¿½lerden dï¿½zgï¿½n ï¿½ï¿½karsa kusursuz bir numara ï¿½retti demek
+		return a; // bu dongulerden sorunsuz cikarsa kusursuz bir numara uretti demek
 	}
 	
 	

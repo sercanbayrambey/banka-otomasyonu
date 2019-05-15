@@ -1,0 +1,22 @@
+Emirhan Kalkavan
+		ID: 0
+		NO: 2848
+		TC: 11210137331
+		Sifre: 13
+		Tip: Ticari
+		Hesap Sayisi: 1
+
+			Hesap ID: 0
+			Hesap No: 20842
+			Hesap Bakiyesi: 1250,00
+Berkant YÅcel
+		ID: 1
+		NO: 1946
+		TC: 11210137335
+		Sifre: 1
+		Tip: Ticari
+		Hesap Sayisi: 1
+
+			Hesap ID: 0
+			Hesap No: 90629
+			Hesap Bakiyesi: 450,00

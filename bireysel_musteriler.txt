@@ -1,0 +1,11 @@
+Sercan Bayrambey
+		ID: 0
+		NO: 7462
+		TC: 11210137332
+		Sifre: 123
+		Tip: Bireysel
+		Hesap Sayisi: 1
+
+			Hesap ID: 0
+			Hesap No: 50846
+			Hesap Bakiyesi: 500,00

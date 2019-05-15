@@ -1,0 +1,3 @@
+Bireysel Musteri Sayisi: 1
+Ticari Musteri Sayisi: 2
+Banka Hazinesi: 2200,00 TL
