@@ -4,15 +4,20 @@ Sercan B
 		TC: 11210137332
 		Sifre: 123
 		Tip: Bireysel
-		Hesap Sayisi: 1
-		Islem Sayisi: 3
+		Hesap Sayisi: 2
+		Islem Sayisi: 4
 
 			5 18 2019 16 51 200,000000 50912 0
 			5 18 2019 16 51 -200,000000 50912 0
 			5 18 2019 16 51 50,000000 50912 60020
+			5 18 2019 20 16 400,000000 30502 0
 			Hesap ID: 0
 			Hesap No: 50912
 			Hesap Bakiyesi: 549,00
+
+			Hesap ID: 1
+			Hesap No: 30502
+			Hesap Bakiyesi: 400,00
 Ozge Buko
 		ID: 1
 		NO: 5732

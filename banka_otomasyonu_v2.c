@@ -6,50 +6,22 @@
 #include <time.h>
 
 /* 
--************Yeni Müþteri Ekleme
-    -Müþteri No (Special)
-    -Bireysel / Ticari (Farklý Dosyalar)
-
-****************-Hesap Açtýrma
-    -Müþteri istediði kadar hesap açar
-    -Hesap numaralarý eþsiz
-
--Para Çekme
-    -Bireysel max günlük para çekme: 750, ticari: 1500
-    ************-Hesabýnda yoksa ek hesap
-
-**************-Para Yatýrma
-TODO: KENDÝNE HAVALE YAPAMASIN
-************************************-Hesaba Havale
-    -Havale yapacagý kiþinin hesap no
-    -Ticari müþtelerilerden havale ücreti kesilmez, bireysel müþteriler %2 kesilir.
-
+-Bireysel max günlük para çekme: 750, ticari: 1500
+-Pointer
+-KENDÝNE HAVALE YAPAMASIN
+- Ad Soyad Numara Girmesin
 -Banka Gelir & Gider Raporu
     -bankadan giden, gelen ve bankada bulunan toplam para miktarý vb
     -Kullanýcý sistem üzerinden rapor al kýsmýný seçerse, rapor isimli dosyadan okuma yapýlýp ekranda gösterilecektir.
-
 -Hesap Özeti
     -Belirtilen tarih aralýðýnda
     -Çekilen, yatýrýlan, havale yapýlmýþsa kime yapýldýðý ve miktarý, baþka bir hesaptan havale para geldiyse kimden geldiði ve miktarý gibi 
     bilgiler ve bu iþlemlerin tarihleri görüntülenmelidir. Ve dekont.txt isimli dosyaya yazýlacaktýr.
-
 -Hesap Kapama
     -Bakiye 0 olmasý gerekli, kapatýldýðýnda müþteri bilgileri de silinecek!
 
-	
-	*/
-	
-	/*
-	int tm_sec; /* saniye, (0 - 59) 
-int tm_min;  dakika, (0 - 59) 
-int tm_hour;  saat, (0 - 23) 
-int tm_mday;  ayýn günü, (1 - 31) 
-int tm_mon;   ay, (0 - 11), 0 = Ocak 
-int tm_year;  yýl - 1900 
-int tm_wday;  haftanýn günü, (0 - 6), 0 = Pazar 
-int tm_yday;  yýlýn günü,(0 - 365) 
-int tm_isdst;  gündüz (-1/0/1) 
-	*/
+	*/	
+
 	
 //Fonksiyonlar	
 void AnaMenu();
@@ -189,6 +161,7 @@ void AnaMenu()
 	char secim[20];
 	system("cls");
 	printf("\t\t\t\t\t\t\t\t\t\t\t\t\t%d.%d.%d  %d:%d",ay,gun,yil,saat,dakika);
+	printf("\n\n\n<------------ MKA Bankasi ------------>\n");
 	printf("\n\n\n<------------ Ana Menu ------------>\n");
 	printf("<!> 1. Yeni Müþteri Kaydý\n");
 	printf("<!> 2. Müþteri Giriþi\n");
@@ -247,7 +220,7 @@ void YeniMusteri()
 		
 		printf("<!>Ad Soyad:");
 		fflush(stdin);
-		gets(bnk.bry_musteriler[bnk.bireyselMS].adSoyad); // TODO: NUMARA GIRMEYI ENGELLE
+		gets(bnk.bry_musteriler[bnk.bireyselMS].adSoyad); 
 		printf("\n<!>TC:");
 		gets(bnk.bry_musteriler[bnk.bireyselMS].TC);
 	
@@ -938,7 +911,7 @@ void HavaleYap()
 	
 	if(bnk.havaleYapilacakHesapTipi == 0) // Bireysel Ýþlemler
 	{
-	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar,havaleHesapNo,bnk.bry_musteriler[havaleMusteriID].adSoyad);
+	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar-komisyon,havaleHesapNo,bnk.bry_musteriler[havaleMusteriID].adSoyad);
 	printf("\n\t<!> Onaylýyorsanýz bir tuþa basýn... (0= Ýptal)");
 	*secim = getch();
 	if(secim == "0")
@@ -964,7 +937,7 @@ void HavaleYap()
 	
 	else // TÝCARÝ HESABA GÖNDER
 		{
-	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar,havaleHesapNo,bnk.tcr_musteriler[havaleMusteriID].adSoyad);
+	printf("\n\t<!> %.2f TL göndereceðiniz Hesap No: %d, Kayýtlý Olduðu Ad Soyad: %s",gonderilecekMiktar-komisyon,havaleHesapNo,bnk.tcr_musteriler[havaleMusteriID].adSoyad);
 	printf("\n\t<!> Onaylýyorsanýz bir tuþa basýn... (0= Ýptal)");
 	*secim = getch();
 	if(secim == "0")
