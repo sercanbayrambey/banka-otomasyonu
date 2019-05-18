@@ -1,0 +1,22 @@
+Sercan Bayrambey
+		ID: 0
+		NO: 3212
+		TC: 11210137332
+		Sifre: 123
+		Tip: Ticari
+		Hesap Sayisi: 1
+		Islem Sayisi: 2
+
+			5 18 2019 16 12 500,000000 60020 0
+			5 18 2019 16 12 500,000000 60020 50912
+			Hesap ID: 0
+			Hesap No: 60020
+			Hesap Bakiyesi: 50,00
+Ozge Buk
+		ID: 1
+		NO: 4327
+		TC: 11210137331
+		Sifre: 123
+		Tip: Ticari
+		Hesap Sayisi: 0
+		Islem Sayisi: 0
