@@ -1,0 +1,9 @@
+Islemler:
+				17 05 2019 -500 5233 55434 // havale 5233 hesap nodan 55434 e 	
+				17 05 2019 -500 5233 // 5233 den 500 tl cekme
+				17 05 2019 +500 5233 // 5233 e 500 tl yatýrma
+
+
+Günlük Limit?!
+	Her müþterinin günlük çektiði  para miktari, bankanýn tarihine göre sýfýrlanacak, tarih banka dosyasýndan çekilecek
+ve son sýfýrlama tarihi olacak.

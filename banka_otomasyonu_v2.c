@@ -3,6 +3,7 @@
 #include <string.h>
 #include <windows.h>
 #include <locale.h>
+#include <time.h>
 
 /* 
 -************Yeni Müþteri Ekleme
@@ -38,6 +39,18 @@ TODO: KENDÝNE HAVALE YAPAMASIN
 	
 	*/
 	
+	/*
+	int tm_sec; /* saniye, (0 - 59) 
+int tm_min;  dakika, (0 - 59) 
+int tm_hour;  saat, (0 - 23) 
+int tm_mday;  ayýn günü, (1 - 31) 
+int tm_mon;   ay, (0 - 11), 0 = Ocak 
+int tm_year;  yýl - 1900 
+int tm_wday;  haftanýn günü, (0 - 6), 0 = Pazar 
+int tm_yday;  yýlýn günü,(0 - 365) 
+int tm_isdst;  gündüz (-1/0/1) 
+	*/
+	
 //Fonksiyonlar	
 void AnaMenu();
 void BankaVerileriniGuncelle();
@@ -59,10 +72,19 @@ void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 void HavaleYap();
 int MusteriIDBul(int hesapNo);
 int HesapIDBul(int hesapNo);
+void IslemGecmisineEkle(int hesapNo,float tutar,int havaleYapilanHesapNo);
 //
 	
 
-	
+	struct Islem
+	{
+		int No;
+		int islemYapilanHesapNo;
+		int havaleYapilanHesapNo;
+		int gun,ay,yil,saat,dakika;
+		float tutar;
+		int Tip;
+	};
 	
 	struct Hesap
 	{	
@@ -76,8 +98,9 @@ int HesapIDBul(int hesapNo);
 	{
 		char TC[15],sifre[20],adSoyad[40],tip[10];
 		int No;
-		int id,hesapsayisi;
+		int id,hesapsayisi,islemsayisi;
 		struct Hesap hesap[100];
+		struct Islem islem[100];
 		
 		
 	};
@@ -86,8 +109,9 @@ int HesapIDBul(int hesapNo);
 	{
 		char TC[15],sifre[20],adSoyad[40],tip[10];
 		int No;
-		int id,hesapsayisi;
+		int id,hesapsayisi,islemsayisi;
 		struct Hesap hesap[100];
+		struct Islem islem[100];
 		
 		
 	};
@@ -96,8 +120,9 @@ int HesapIDBul(int hesapNo);
 	{
 		char TC[15],sifre[20],adSoyad[40],tip[10];
 		int No;
-		int id,hesapsayisi;
+		int id,hesapsayisi,islemsayisi;
 		struct Hesap hesap[100];
+		struct Islem islem[100];
 		
 		
 	};
@@ -115,12 +140,30 @@ int HesapIDBul(int hesapNo);
 		int bireyselMS,ticariMS; //  ms = musteri sayisi		
 	}bnk; 
 	
+	
+	
+	
+int gun,ay,yil,yilgun,saat,dakika;
 
-	
-	
-	
 int main()
 {
+	
+	// Bugünün tarihini çek
+	time_t t;
+	struct tm *zaman;
+	t = time(NULL);
+	zaman = localtime(&t);
+	gun = zaman->tm_mon+1;
+	ay = zaman->tm_mday; // 1 - 31
+	yil = zaman->tm_year + 1900;
+	saat = zaman->tm_hour;
+	dakika = zaman->tm_min;
+	// Bugünün tarihini çek
+	 
+	
+	
+	
+	
 	bnk.girisYapilanHesapTipi = -1;
 	bnk.girisYapilanID = -1;
 	bnk.havaleYapilacakHesapTipi = -1;
@@ -138,6 +181,7 @@ void AnaMenu()
 	
 	char secim[20];
 	system("cls");
+	printf("\t\t\t\t\t\t\t\t\t\t\t\t\t%d.%d.%d  %d:%d",ay,gun,yil,saat,dakika);
 	printf("\n\n\n<------------ Ana Menu ------------>\n");
 	printf("<!> 1. Yeni Müþteri Kaydý\n");
 	printf("<!> 2. Müþteri Giriþi\n");
@@ -579,6 +623,7 @@ void HesabaParaYatir()
 		}
 
 	// ParayýHesaba Ekle
+	IslemGecmisineEkle(bnk.aktif_musteri.hesap[secilenID].No,yatirilacakMiktar,0);
 	bnk.aktif_musteri.hesap[secilenID].bakiye+=yatirilacakMiktar;
 	bnk.hazine += yatirilacakMiktar;
 	MusteriVerileriniGuncelle();
@@ -695,6 +740,7 @@ void HesaptanParaCek()
 		}
 
 	// Parayý Hesaptan Kes
+	IslemGecmisineEkle(bnk.aktif_musteri.hesap[secilenID].No,-cekilecekMiktar,0);
 	bnk.aktif_musteri.hesap[secilenID].bakiye-=cekilecekMiktar;
 	bnk.hazine -= cekilecekMiktar;
 	MusteriVerileriniGuncelle();
@@ -747,6 +793,7 @@ void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 			}
 			
 			//Ek hesaptan ve orjinal hesaptan parayý çek
+			IslemGecmisineEkle(bnk.aktif_musteri.hesap[anaHesapID].No,-cekilecekMiktar,0);
 			bnk.aktif_musteri.hesap[hesapID].bakiye-=eksikMiktar;
 			bnk.aktif_musteri.hesap[anaHesapID].bakiye = 0;
 			bnk.hazine-= cekilecekMiktar;
@@ -884,11 +931,18 @@ void HavaleYap()
 	//Gonderme basarili		
 	bnk.aktif_musteri.hesap[secilenID].bakiye-=gonderilecekMiktar;
 	if(bnk.havaleYapilacakHesapTipi == 0)
+	{
+		IslemGecmisineEkle(bnk.aktif_musteri.hesap[secilenID].No,gonderilecekMiktar-komisyon,bnk.bry_musteriler[havaleMusteriID].hesap[havaleHesapID].No);
 		bnk.bry_musteriler[havaleMusteriID].hesap[havaleHesapID].bakiye+= (gonderilecekMiktar - komisyon);	
+		
+	}
 	else
+	{
+		IslemGecmisineEkle(bnk.aktif_musteri.hesap[secilenID].No,gonderilecekMiktar-komisyon,bnk.tcr_musteriler[havaleMusteriID].hesap[havaleHesapID].No);
 		bnk.tcr_musteriler[havaleMusteriID].hesap[havaleHesapID].bakiye+= (gonderilecekMiktar - komisyon);
+	}
 		
-		
+	
 	MusteriVerileriniGuncelle();
 	BankaVerileriniGuncelle();
 	//Gönderme tamamlandý
@@ -1001,6 +1055,23 @@ int HesapIDBul(int hesapNo)
 }
 
 
+
+void IslemGecmisineEkle(int hesapNo,float tutar,int havaleYapilanHesapNo) 
+{
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].islemYapilanHesapNo = hesapNo;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].havaleYapilanHesapNo = havaleYapilanHesapNo;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].tutar = tutar;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].gun = gun;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].ay = ay;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].yil = yil;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].saat = saat;
+bnk.aktif_musteri.islem[bnk.aktif_musteri.islemsayisi].dakika = dakika;
+
+bnk.aktif_musteri.islemsayisi++;	
+return;
+}
+
+
 void GirisYapilanHesabiProgramaCek()
 {
 	int i,j;
@@ -1011,6 +1082,7 @@ void GirisYapilanHesabiProgramaCek()
 		bnk.aktif_musteri.No = bnk.bry_musteriler[bnk.girisYapilanID].No;
 		bnk.aktif_musteri.id = bnk.girisYapilanID;
 		bnk.aktif_musteri.hesapsayisi  = bnk.bry_musteriler[bnk.girisYapilanID].hesapsayisi;
+		bnk.aktif_musteri.islemsayisi = bnk.bry_musteriler[bnk.girisYapilanID].islemsayisi;
 		strcpy(bnk.aktif_musteri.adSoyad,bnk.bry_musteriler[bnk.girisYapilanID].adSoyad);
 		strcpy(bnk.aktif_musteri.TC,bnk.bry_musteriler[bnk.girisYapilanID].TC);
 		strcpy(bnk.aktif_musteri.sifre,bnk.bry_musteriler[bnk.girisYapilanID].sifre);
@@ -1022,6 +1094,18 @@ void GirisYapilanHesabiProgramaCek()
 			bnk.aktif_musteri.hesap[i].bakiye = bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].bakiye;
 			bnk.aktif_musteri.hesap[i].No = bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].No;
 		}
+		for(i=0;i<bnk.bry_musteriler[bnk.girisYapilanID].islemsayisi;i++)
+		{
+		bnk.aktif_musteri.islem[i].islemYapilanHesapNo = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].islemYapilanHesapNo;
+		bnk.aktif_musteri.islem[i].tutar = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].tutar;
+		bnk.aktif_musteri.islem[i].gun = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].gun;
+		bnk.aktif_musteri.islem[i].ay = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].ay;
+		bnk.aktif_musteri.islem[i].yil = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].yil;
+		bnk.aktif_musteri.islem[i].saat = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].saat;
+		bnk.aktif_musteri.islem[i].dakika = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].dakika;
+		bnk.aktif_musteri.islem[i].havaleYapilanHesapNo = bnk.bry_musteriler[bnk.girisYapilanID].islem[i].havaleYapilanHesapNo;
+	
+		}
 		
 	}
 	else  //Tï¿½CARï¿½
@@ -1029,6 +1113,7 @@ void GirisYapilanHesabiProgramaCek()
 		bnk.aktif_musteri.No = bnk.tcr_musteriler[bnk.girisYapilanID].No;
 		bnk.aktif_musteri.id = bnk.girisYapilanID;
 		bnk.aktif_musteri.hesapsayisi  = bnk.tcr_musteriler[bnk.girisYapilanID].hesapsayisi;
+		bnk.aktif_musteri.islemsayisi = bnk.tcr_musteriler[bnk.girisYapilanID].islemsayisi;
 		strcpy(bnk.aktif_musteri.adSoyad,bnk.tcr_musteriler[bnk.girisYapilanID].adSoyad);
 		strcpy(bnk.aktif_musteri.TC,bnk.tcr_musteriler[bnk.girisYapilanID].TC);
 		strcpy(bnk.aktif_musteri.sifre,bnk.tcr_musteriler[bnk.girisYapilanID].sifre);
@@ -1042,6 +1127,21 @@ void GirisYapilanHesabiProgramaCek()
 			bnk.aktif_musteri.hesap[i].bakiye = bnk.tcr_musteriler[bnk.girisYapilanID].hesap[i].bakiye;
 			bnk.aktif_musteri.hesap[i].No = bnk.tcr_musteriler[bnk.girisYapilanID].hesap[i].No;
 		}
+		
+		
+		for(i=0;i<bnk.tcr_musteriler[bnk.girisYapilanID].islemsayisi;i++)
+		{
+			bnk.aktif_musteri.islem[i].islemYapilanHesapNo = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].islemYapilanHesapNo;
+			bnk.aktif_musteri.islem[i].tutar = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].tutar;
+			bnk.aktif_musteri.islem[i].gun = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].gun;
+			bnk.aktif_musteri.islem[i].ay = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].ay;
+			bnk.aktif_musteri.islem[i].yil = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].yil;
+			bnk.aktif_musteri.islem[i].saat = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].saat;
+			bnk.aktif_musteri.islem[i].dakika = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].dakika;
+			bnk.aktif_musteri.islem[i].havaleYapilanHesapNo = bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].havaleYapilanHesapNo;
+	
+		}
+		
 		
 	}
 	
@@ -1061,6 +1161,7 @@ void GirisYapilanHesabiGuncelle()
 			bnk.bry_musteriler[bnk.girisYapilanID].No = bnk.aktif_musteri.No ;
 			bnk.girisYapilanID =  bnk.aktif_musteri.id ;
 			bnk.bry_musteriler[bnk.girisYapilanID].hesapsayisi = bnk.aktif_musteri.hesapsayisi;
+			bnk.bry_musteriler[bnk.girisYapilanID].islemsayisi = bnk.aktif_musteri.islemsayisi;
 			strcpy(bnk.bry_musteriler[bnk.girisYapilanID].adSoyad,bnk.aktif_musteri.adSoyad);
 			strcpy(bnk.bry_musteriler[bnk.girisYapilanID].TC,bnk.aktif_musteri.TC);
 			strcpy(bnk.bry_musteriler[bnk.girisYapilanID].sifre,bnk.aktif_musteri.sifre);
@@ -1072,6 +1173,18 @@ void GirisYapilanHesabiGuncelle()
 			bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].bakiye = bnk.aktif_musteri.hesap[i].bakiye;
 			bnk.bry_musteriler[bnk.girisYapilanID].hesap[i].No = bnk.aktif_musteri.hesap[i].No ;
 		}
+		
+		for(i=0;i<bnk.bry_musteriler[bnk.girisYapilanID].islemsayisi;i++)
+		{
+		bnk.bry_musteriler[bnk.girisYapilanID].islem[i].islemYapilanHesapNo = bnk.aktif_musteri.islem[i].islemYapilanHesapNo;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].tutar = bnk.aktif_musteri.islem[i].tutar;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].gun = bnk.aktif_musteri.islem[i].gun;
+	 	bnk.bry_musteriler[bnk.girisYapilanID].islem[i].ay = bnk.aktif_musteri.islem[i].ay;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].yil = bnk.aktif_musteri.islem[i].yil;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].saat = bnk.aktif_musteri.islem[i].saat;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].dakika = bnk.aktif_musteri.islem[i].dakika;
+	    bnk.bry_musteriler[bnk.girisYapilanID].islem[i].havaleYapilanHesapNo = bnk.aktif_musteri.islem[i].havaleYapilanHesapNo;
+		}
 				
 			
 		}
@@ -1080,6 +1193,7 @@ void GirisYapilanHesabiGuncelle()
 			bnk.tcr_musteriler[bnk.girisYapilanID].No = bnk.aktif_musteri.No ;
 			bnk.girisYapilanID =  bnk.aktif_musteri.id ;
 			bnk.tcr_musteriler[bnk.girisYapilanID].hesapsayisi = bnk.aktif_musteri.hesapsayisi;
+			bnk.tcr_musteriler[bnk.girisYapilanID].islemsayisi = bnk.aktif_musteri.islemsayisi;
 			strcpy(bnk.tcr_musteriler[bnk.girisYapilanID].adSoyad,bnk.aktif_musteri.adSoyad);
 			strcpy(bnk.tcr_musteriler[bnk.girisYapilanID].TC,bnk.aktif_musteri.TC);
 			strcpy(bnk.tcr_musteriler[bnk.girisYapilanID].sifre,bnk.aktif_musteri.sifre);
@@ -1091,6 +1205,18 @@ void GirisYapilanHesabiGuncelle()
 			bnk.tcr_musteriler[bnk.girisYapilanID].hesap[i].id = bnk.aktif_musteri.hesap[i].id ;
 			bnk.tcr_musteriler[bnk.girisYapilanID].hesap[i].bakiye = bnk.aktif_musteri.hesap[i].bakiye;
 			bnk.tcr_musteriler[bnk.girisYapilanID].hesap[i].No = bnk.aktif_musteri.hesap[i].No ;
+		}
+		
+		for(i=0;i<bnk.tcr_musteriler[bnk.girisYapilanID].islemsayisi;i++)
+		{
+			bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].islemYapilanHesapNo = bnk.aktif_musteri.islem[i].islemYapilanHesapNo;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].tutar = bnk.aktif_musteri.islem[i].tutar;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].gun = bnk.aktif_musteri.islem[i].gun;
+		 	bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].ay = bnk.aktif_musteri.islem[i].ay;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].yil = bnk.aktif_musteri.islem[i].yil;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].yil = bnk.aktif_musteri.islem[i].saat;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].yil = bnk.aktif_musteri.islem[i].dakika;
+		    bnk.tcr_musteriler[bnk.girisYapilanID].islem[i].havaleYapilanHesapNo = bnk.aktif_musteri.islem[i].havaleYapilanHesapNo;
 		}
 			
 		}
@@ -1161,19 +1287,33 @@ void MusteriVerileriniCek()
 	
 	//Bireysel Mï¿½ï¿½terileri Programa ï¿½ek
 	for(i=0;i<bnk.bireyselMS;i++){
-		fscanf(bireyselF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",&bnk.bry_musteriler[i].adSoyad,&bnk.bry_musteriler[i].id,&bnk.bry_musteriler[i].No,&bnk.bry_musteriler[i].TC,&bnk.bry_musteriler[i].sifre,&bnk.bry_musteriler[i].tip,&bnk.bry_musteriler[i].hesapsayisi);
+		fscanf(bireyselF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d",&bnk.bry_musteriler[i].adSoyad,&bnk.bry_musteriler[i].id,&bnk.bry_musteriler[i].No,&bnk.bry_musteriler[i].TC,&bnk.bry_musteriler[i].sifre,&bnk.bry_musteriler[i].tip,&bnk.bry_musteriler[i].hesapsayisi);
+		fscanf(bireyselF,"\n\t\tIslem Sayisi: %d\n",&bnk.bry_musteriler[i].islemsayisi);
+		
+		for(j=0;j<bnk.bry_musteriler[i].islemsayisi;j++)
+		{
+			fscanf(bireyselF,"\n\t\t\t%d %d %d %d %d %f %d %d",&bnk.bry_musteriler[i].islem[j].gun,&bnk.bry_musteriler[i].islem[j].ay,&bnk.bry_musteriler[i].islem[j].yil,&bnk.bry_musteriler[i].islem[j].saat,&bnk.bry_musteriler[i].islem[j].dakika,&bnk.bry_musteriler[i].islem[j].tutar,&bnk.bry_musteriler[i].islem[j].islemYapilanHesapNo,&bnk.bry_musteriler[i].islem[j].havaleYapilanHesapNo);
+		}
+		
+		
 		
 		for(j=0;j<bnk.bry_musteriler[i].hesapsayisi;j++)
 		{
-		fscanf(bireyselF,"\n\t\t\tHesap ID: %d",&bnk.bry_musteriler[i].hesap[j].id);
-		fscanf(bireyselF,"\n\t\t\tHesap No: %d",&bnk.bry_musteriler[i].hesap[j].No);
-		fscanf(bireyselF,"\n\t\t\tHesap Bakiyesi: %f\n",&bnk.bry_musteriler[i].hesap[j].bakiye);
+			fscanf(bireyselF,"\n\t\t\tHesap ID: %d",&bnk.bry_musteriler[i].hesap[j].id);
+			fscanf(bireyselF,"\n\t\t\tHesap No: %d",&bnk.bry_musteriler[i].hesap[j].No);
+			fscanf(bireyselF,"\n\t\t\tHesap Bakiyesi: %f\n",&bnk.bry_musteriler[i].hesap[j].bakiye);
 		}
 	}
 	
 	for(i=0;i<bnk.ticariMS;i++){
-
-		fscanf(ticariF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",&bnk.tcr_musteriler[i].adSoyad,&bnk.tcr_musteriler[i].id,&bnk.tcr_musteriler[i].No,&bnk.tcr_musteriler[i].TC,&bnk.tcr_musteriler[i].sifre,&bnk.tcr_musteriler[i].tip,&bnk.tcr_musteriler[i].hesapsayisi);
+		fscanf(ticariF,"%[^\n]\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d",&bnk.tcr_musteriler[i].adSoyad,&bnk.tcr_musteriler[i].id,&bnk.tcr_musteriler[i].No,&bnk.tcr_musteriler[i].TC,&bnk.tcr_musteriler[i].sifre,&bnk.tcr_musteriler[i].tip,&bnk.tcr_musteriler[i].hesapsayisi);
+		fscanf(bireyselF,"\n\t\tIslem Sayisi: %d\n",&bnk.tcr_musteriler[i].islemsayisi);
+		
+		for(j=0;j<bnk.tcr_musteriler[i].islemsayisi;j++)
+		{
+			fscanf(ticariF,"\n\t\t\t%d %d %d %d %d %f %d %d",&bnk.tcr_musteriler[i].islem[j].gun,&bnk.tcr_musteriler[i].islem[j].ay,&bnk.tcr_musteriler[i].islem[j].yil,&bnk.tcr_musteriler[i].islem[j].saat,&bnk.tcr_musteriler[i].islem[j].dakika,&bnk.tcr_musteriler[i].islem[j].tutar,&bnk.tcr_musteriler[i].islem[j].islemYapilanHesapNo,&bnk.tcr_musteriler[i].islem[j].havaleYapilanHesapNo);
+		}
+		
 		for(j=0;j<bnk.tcr_musteriler[i].hesapsayisi;j++)
 		{
 			fscanf(ticariF,"\n\t\t\tHesap ID: %d",&bnk.tcr_musteriler[i].hesap[j].id);
@@ -1201,8 +1341,14 @@ void MusteriVerileriniGuncelle()
 	int i,j;
 	
 	for(i=0;i<bnk.bireyselMS;i++){
+		fprintf(bireyselF,"%s\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d",bnk.bry_musteriler[i].adSoyad,i,bnk.bry_musteriler[i].No,bnk.bry_musteriler[i].TC,bnk.bry_musteriler[i].sifre,bnk.bry_musteriler[i].tip,bnk.bry_musteriler[i].hesapsayisi);
+		fprintf(bireyselF,"\n\t\tIslem Sayisi: %d\n",bnk.bry_musteriler[i].islemsayisi);
 		
-		fprintf(bireyselF,"%s\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",bnk.bry_musteriler[i].adSoyad,i,bnk.bry_musteriler[i].No,bnk.bry_musteriler[i].TC,bnk.bry_musteriler[i].sifre,bnk.bry_musteriler[i].tip,bnk.bry_musteriler[i].hesapsayisi);
+		for(j=0;j<bnk.bry_musteriler[i].islemsayisi;j++)
+		{
+			fprintf(bireyselF,"\n\t\t\t%d %d %d %d %d %f %d %d",bnk.bry_musteriler[i].islem[j].gun,bnk.bry_musteriler[i].islem[j].ay,bnk.bry_musteriler[i].islem[j].yil,bnk.bry_musteriler[i].islem[j].saat,bnk.bry_musteriler[i].islem[j].dakika,bnk.bry_musteriler[i].islem[j].tutar,bnk.bry_musteriler[i].islem[j].islemYapilanHesapNo,bnk.bry_musteriler[i].islem[j].havaleYapilanHesapNo);
+		}
+		
 		for(j=0;j<bnk.bry_musteriler[i].hesapsayisi;j++)
 		{
 			fprintf(bireyselF,"\n\t\t\tHesap ID: %d",bnk.bry_musteriler[i].hesap[j].id);
@@ -1214,7 +1360,15 @@ void MusteriVerileriniGuncelle()
 	//Ticari Musterileri Guncelle
 	
 	for(i=0;i<bnk.ticariMS;i++){
-		fprintf(ticariF,"%s\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d\n",bnk.tcr_musteriler[i].adSoyad,i,bnk.tcr_musteriler[i].No,bnk.tcr_musteriler[i].TC,bnk.tcr_musteriler[i].sifre,bnk.tcr_musteriler[i].tip,bnk.tcr_musteriler[i].hesapsayisi);
+		
+		fprintf(ticariF,"%s\n\t\tID: %d\n\t\tNO: %d\n\t\tTC: %s\n\t\tSifre: %s\n\t\tTip: %s\n\t\tHesap Sayisi: %d",bnk.tcr_musteriler[i].adSoyad,i,bnk.tcr_musteriler[i].No,bnk.tcr_musteriler[i].TC,bnk.tcr_musteriler[i].sifre,bnk.tcr_musteriler[i].tip,bnk.tcr_musteriler[i].hesapsayisi);
+		fprintf(bireyselF,"\n\t\tIslem Sayisi: %d\n",bnk.tcr_musteriler[i].islemsayisi);
+		
+		for(j=0;j<bnk.tcr_musteriler[i].islemsayisi;j++)
+		{
+			fprintf(ticariF,"\n\t\t\t%d %d %d %d %d %f %d",bnk.tcr_musteriler[i].islem[j].gun,bnk.tcr_musteriler[i].islem[j].ay,bnk.tcr_musteriler[i].islem[j].yil,bnk.tcr_musteriler[i].islem[j].saat,bnk.tcr_musteriler[i].islem[j].dakika,bnk.tcr_musteriler[i].islem[j].tutar,bnk.tcr_musteriler[i].islem[j].islemYapilanHesapNo,bnk.tcr_musteriler[i].islem[j].havaleYapilanHesapNo);
+		}
+		
 		for(j=0;j<bnk.tcr_musteriler[i].hesapsayisi;j++)
 		{
 			fprintf(ticariF,"\n\t\t\tHesap ID: %d",bnk.tcr_musteriler[i].hesap[j].id);
