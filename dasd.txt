@@ -1,0 +1,2 @@
+herkesin günlük çektiði toplam para tutulacak, bankada sýfýrlama tarihi tutulacak (yýl günü , yýl)
+eðer tarih bundan farklý olursa günlük limitler sýfýrlanacak!
