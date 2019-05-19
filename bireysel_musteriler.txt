@@ -1,28 +1,20 @@
-Sercan B
+Sercan Bayrambey
 		ID: 0
-		NO: 9780
+		NO: 9502
 		TC: 11210137332
 		Sifre: 123
 		Tip: Bireysel
 		Hesap Sayisi: 2
 		Islem Sayisi: 4
 
-			5 18 2019 16 51 200,000000 50912 0
-			5 18 2019 16 51 -200,000000 50912 0
-			5 18 2019 16 51 50,000000 50912 60020
-			5 18 2019 20 16 400,000000 30502 0
+			19 3 2019 15 5 500,000000 60248 0
+			19 5 2019 15 5 500,000000 50526 0
+			19 5 2019 15 10 500,000000 50526 0
+			19 5 2019 15 10 500,000000 60248 0
 			Hesap ID: 0
-			Hesap No: 50912
-			Hesap Bakiyesi: 549,00
+			Hesap No: 50526
+			Hesap Bakiyesi: 1000,00
 
 			Hesap ID: 1
-			Hesap No: 30502
-			Hesap Bakiyesi: 400,00
-Ozge Buko
-		ID: 1
-		NO: 5732
-		TC: 11210137331
-		Sifre: 123
-		Tip: Bireysel
-		Hesap Sayisi: 0
-		Islem Sayisi: 0
+			Hesap No: 60248
+			Hesap Bakiyesi: 1300,00

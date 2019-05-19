@@ -10,13 +10,13 @@
 -Pointer
 -KENDÝNE HAVALE YAPAMASIN
 - Ad Soyad Numara Girmesin
+
 -Banka Gelir & Gider Raporu
     -bankadan giden, gelen ve bankada bulunan toplam para miktarý vb
     -Kullanýcý sistem üzerinden rapor al kýsmýný seçerse, rapor isimli dosyadan okuma yapýlýp ekranda gösterilecektir.
--Hesap Özeti
-    -Belirtilen tarih aralýðýnda
-    -Çekilen, yatýrýlan, havale yapýlmýþsa kime yapýldýðý ve miktarý, baþka bir hesaptan havale para geldiyse kimden geldiði ve miktarý gibi 
-    bilgiler ve bu iþlemlerin tarihleri görüntülenmelidir. Ve dekont.txt isimli dosyaya yazýlacaktýr.
+
+ baþka bir hesaptan havale para geldiyse kimden geldiði ve miktarý gibi 
+
 -Hesap Kapama
     -Bakiye 0 olmasý gerekli, kapatýldýðýnda müþteri bilgileri de silinecek!
 
@@ -131,8 +131,8 @@ int main()
 	struct tm *zaman;
 	t = time(NULL);
 	zaman = localtime(&t);
-	gun = zaman->tm_mon+1;
-	ay = zaman->tm_mday; // 1 - 31
+	ay = zaman->tm_mon+1;
+	gun = zaman->tm_mday; 
 	yil = zaman->tm_year + 1900;
 	saat = zaman->tm_hour;
 	dakika = zaman->tm_min;
@@ -160,9 +160,12 @@ void AnaMenu()
 	
 	char secim[20];
 	system("cls");
-	printf("\t\t\t\t\t\t\t\t\t\t\t\t\t%d.%d.%d  %d:%d",ay,gun,yil,saat,dakika);
-	printf("\n\n\n<------------ MKA Bankasi ------------>\n");
-	printf("\n\n\n<------------ Ana Menu ------------>\n");
+	if(dakika<10)
+		printf("\n%d.%d.%d  %d:0%d",gun,ay,yil,saat,dakika);
+	else
+		printf("\n%d.%d.%d  %d:%d",gun,ay,yil,saat,dakika);
+	printf("\n\n<<<<< MKA Bankasi >>>>>\n\n");
+	printf("<------ Ana Menu ------>\n");
 	printf("<!> 1. Yeni Müþteri Kaydý\n");
 	printf("<!> 2. Müþteri Giriþi\n");
 	printf("<!> 3. Banka Gelir - Gider Raporu\n");
@@ -494,6 +497,7 @@ void HesapAc()
 	printf("\n<!> Hesabýnýz baþarýyla açýldý!");
 	Sleep(1500);
 	MusteriMenu();
+	return;
 	
 }
 
@@ -766,7 +770,7 @@ void ParayiEkHesaptanCek(float eksikMiktar,float cekilecekMiktar,int anaHesapID)
 		
 	if(hesapID == -1){
 			printf("\n\t<!> Hiç bir hesabýnýzda %.2f TL bulunamadi. Ana menuye yönlendiriliyorsunuz..",eksikMiktar);
-			Sleep(3000);
+			Sleep(5000);
 			MusteriMenu();
 			return;
 		}
@@ -1045,6 +1049,9 @@ void HesapOzeti()
 	char secim[20];
 	int gosterilenIslemSayisi=0;
 	int secilenID;
+	int secilenAy;
+	FILE *fp;
+	fp = fopen("dekont.txt","w");
 	system("cls");
 	printf("\n\n\n<------------ Hesaplarým ------------>\n");
 	printf("<> Ad Soyad: %s\n<> Müþteri No: %d\n<> TC: %s\n<> Müþteri Tipi: %s\n<> Hesap Sayisi: %d\n\n",bnk.aktif_musteri.adSoyad,bnk.aktif_musteri.No,bnk.aktif_musteri.TC,bnk.aktif_musteri.tip,bnk.aktif_musteri.hesapsayisi);
@@ -1058,7 +1065,7 @@ void HesapOzeti()
 		
 	}
 	
-	printf("\n\n\t<!> Ýþlem kaydýný görmek istediðiniz hesap ID'sýný giriniz (-1 Menüye Dön)(-2 Bütün Ýþlemleri Göster): ");
+	printf("\n\n\t<!> Ýþlem kaydýný görmek istediðiniz hesap ID'sýný giriniz (-1 Menüye Dön): ");
 	scanf("%s",secim);
 	
 	if(strcmp(secim,"-1") == 0)
@@ -1067,9 +1074,6 @@ void HesapOzeti()
 		return;
 	}
 		
-	if(strcmp(secim,"-2") == 0);
-		//TUM ISLEMLER	
-	
 	if(isdigit(*secim) == 0)
 	{
 		printf("\t<!> Hatalý bir seçim yaptýnýz.");
@@ -1087,38 +1091,93 @@ void HesapOzeti()
 		HesapOzeti();
 		return;
 	}
-	for(i=0;i<bnk.aktif_musteri.islemsayisi;i++)
+	
+	printf("\t<!> Islem kaydini gormek istediginiz ayin numarasini giriniz (1 = Ocak 0 = Tüm Ýþlemler): ");
+	scanf("%s",secim);
+	
+	if(isdigit(*secim) == 0 || atoi(secim)<0 || atoi(secim)>12) 
 	{
-		if(bnk.aktif_musteri.hesap[secilenID].No == bnk.aktif_musteri.islem[i].islemYapilanHesapNo)
+		printf("\t<!> Hatalý bir seçim yaptýnýz.");
+		Sleep(2000);
+		HesapOzeti();
+		return;
+	}
+	
+	secilenAy = atoi(secim);
+	
+	for(i=0;i<bnk.aktif_musteri.islemsayisi;i++)
 		{
-			printf("\n\t------------------------------------------------");
-			if(bnk.aktif_musteri.islem[i].dakika<10)
-				printf("\n\t[%d.%d.%d %d:0%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);	
-			else
-				printf("\n\t[%d.%d.%d %d:%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);
-			
-			if(bnk.aktif_musteri.islem[i].tutar<0) // Para cekilmis
-				printf("%d No'lu hesaptan %.2f TL para çekildi.",bnk.aktif_musteri.hesap[secilenID].No,-bnk.aktif_musteri.islem[i].tutar);
-			else if(bnk.aktif_musteri.islem[i].tutar>0 && bnk.aktif_musteri.islem[i].havaleYapilanHesapNo == 0) // para yatirilmis
-				printf("%d No'lu hesaba %.2f TL para yatýrýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].tutar);
-			else // havale
-				printf("%d No'lu hesaptan '%d No'lu hesaba %.2f TL havale yapýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].havaleYapilanHesapNo,bnk.aktif_musteri.islem[i].tutar);
-			printf("\n\t------------------------------------------------");
-			printf("\n");
-			gosterilenIslemSayisi++;
+			if(bnk.aktif_musteri.hesap[secilenID].No == bnk.aktif_musteri.islem[i].islemYapilanHesapNo && (secilenAy == bnk.aktif_musteri.islem[i].ay || secilenAy == 0) )
+			{
+				printf("\n\t------------------------------------------------");
+				if(bnk.aktif_musteri.islem[i].dakika<10)
+				{
+					printf("\n\t[%d.%d.%d %d:0%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);	
+					fprintf(fp,"\n\t[%d.%d.%d %d:0%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);	
+				}
+				else
+				{
+					printf("\n\t[%d.%d.%d %d:%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);
+					fprintf(fp,"\n\t[%d.%d.%d %d:%d] ",bnk.aktif_musteri.islem[i].gun,bnk.aktif_musteri.islem[i].ay,bnk.aktif_musteri.islem[i].yil,bnk.aktif_musteri.islem[i].saat,bnk.aktif_musteri.islem[i].dakika);
+				}
+				
+				if(bnk.aktif_musteri.islem[i].tutar<0) // Para cekilmis
+				{
+					printf("%d No'lu hesaptan %.2f TL para çekildi.",bnk.aktif_musteri.hesap[secilenID].No,-bnk.aktif_musteri.islem[i].tutar);
+					fprintf(fp,"%d No'lu hesaptan %.2f TL para çekildi.",bnk.aktif_musteri.hesap[secilenID].No,-bnk.aktif_musteri.islem[i].tutar);
+				}
+				else if(bnk.aktif_musteri.islem[i].tutar>0 && bnk.aktif_musteri.islem[i].havaleYapilanHesapNo == 0) // para yatirilmis
+				{
+					printf("%d No'lu hesaba %.2f TL para yatýrýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].tutar);
+					fprintf(fp,"%d No'lu hesaba %.2f TL para yatýrýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].tutar);
+				}
+				else // havale
+				{
+					printf("%d No'lu hesaptan '%d No'lu hesaba %.2f TL havale yapýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].havaleYapilanHesapNo,bnk.aktif_musteri.islem[i].tutar);
+					fprintf(fp,"%d No'lu hesaptan '%d No'lu hesaba %.2f TL havale yapýldý.",bnk.aktif_musteri.hesap[secilenID].No,bnk.aktif_musteri.islem[i].havaleYapilanHesapNo,bnk.aktif_musteri.islem[i].tutar);
+				}
+				printf("\n\t------------------------------------------------");
+				printf("\n");
+				fprintf(fp,"\n\t------------------------------------------------\n");
+				gosterilenIslemSayisi++;
+				
+			}
 			
 		}
+		if(gosterilenIslemSayisi == 0)
+		{
+			printf("\n\t<!> Belirtilen aralýkta hiç bir iþlem kaydý bulunamadý!");
+			printf("\n\t<!> Ana menüye dönmek için bir tuþa basýnýz...(0 = Baþka Bir Hesap Özeti Çýkar)");
+			*secim = getch();
+			if(!strcmp(secim,"0"))
+			{
+				HesapOzeti();
+				return;
+			}
+			return;
+		}
+			
+		fclose(fp);	
 		
-	}
-	if(gosterilenIslemSayisi == 0)
-		printf("\n\t<!> Bu hesabýnýzla daha önce hiç iþlem yapmamýþsýnýz!");
-	
-	printf("\n\t<!> Ana menüye dönmek için bir tuþa basýnýz...");
-	*secim = getch();
-	MusteriMenu();
-	return;
-	
-	
+		printf("\n\t<!> Dekont istiyorsanýz 0 (sýfýr) tuþuna basýnýz..(Ýstemiyorsanýz her hangi bir tuþa basýn..)");
+		*secim = getch();
+		if(!strcmp(secim,"0"))
+				printf("\n\t<!> Dekont baþarýyla \"dekont.txt\" dosyasýna yazdýrýldý. ");	
+		else
+		{
+			remove("dekont.txt");
+		}
+		
+		printf("\n\t<!> Ana menüye dönmek için bir tuþa basýnýz...(0 = Baþka Bir Hesap Özeti Çýkar)");
+		*secim = getch();
+		if(!strcmp(secim,"0"))
+			{
+				HesapOzeti();
+				return;
+			}
+		MusteriMenu();
+		return;	
+
 	
 }
 
