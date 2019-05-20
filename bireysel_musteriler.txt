@@ -1,28 +1,38 @@
-Sercan Bayrambey
+sb
 		ID: 0
-		NO: 6474
+		NO: 7618
 		TC: 11210137332
 		Sifre: 123
 		Tip: Bireysel
-		Hesap Sayisi: 2
-		Islem Sayisi: 4
+		Hesap Sayisi: 3
+		Islem Sayisi: 6
 
-			20 5 2019 2 9 1500,000000 50925 0
-			20 5 2019 2 9 -500,000000 50925 0
-			20 5 2019 2 9 -250,000000 50925 0
-			20 5 2019 2 9 500,000000 90198 0
+			20 5 2019 18 22 500,000000 70302 0
+			20 5 2019 18 24 200,000000 80321 0
+			20 5 2019 18 24 -600,000000 70302 0
+			20 5 2019 18 50 50,000000 80321 0
+			20 5 2019 18 54 20,000000 80321 70302
+			20 5 2019 18 54 10,000000 80321 50133
 			Hesap ID: 0
-			Hesap No: 50925
-			Hesap Bakiyesi: 750,00
+			Hesap No: 70302
+			Hesap Bakiyesi: 0,00
 
 			Hesap ID: 1
-			Hesap No: 90198
-			Hesap Bakiyesi: 500,00
-sercan b
+			Hesap No: 80321
+			Hesap Bakiyesi: 18,40
+
+			Hesap ID: -1
+			Hesap No: 20956
+			Hesap Bakiyesi: 0,00
+Sercan BAYRAMBEY
 		ID: 1
-		NO: 4415
-		TC: 11210137331
+		NO: 2225
+		TC: 11210137333
 		Sifre: 123
 		Tip: Bireysel
-		Hesap Sayisi: 0
+		Hesap Sayisi: 1
 		Islem Sayisi: 0
+
+			Hesap ID: 0
+			Hesap No: 50133
+			Hesap Bakiyesi: 10,00

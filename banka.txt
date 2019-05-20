@@ -1,3 +1,3 @@
 Bireysel Musteri Sayisi: 2
-Ticari Musteri Sayisi: 1
-Banka Hazinesi: 1750,00 TL Gelir: 4000,00 Gider: 2250,00
+Ticari Musteri Sayisi: 0
+Banka Hazinesi: 101,00 TL Gelir: 701,00 Gider: 600,00
